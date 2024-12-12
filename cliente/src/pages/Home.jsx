@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import {jsPDF} from "jspdf";
+import "jspdf-autotable";
+import {Button} from '@mui/material';
 
 export default function Home() {
 
@@ -15,20 +18,62 @@ export default function Home() {
       }
     }
     buscarUsuario();
-  }, [])
+  }, [usuarios])
+
+
+const removerPessoa = async (id) => {
+   try{
+        await fetch('http://localhost:3000/usuarios/'+id, {
+          method: 'DELETE'
+        })
+   }catch{
+
+   }
+
+}
+
+const exportarPDF = () => {
+const doc =  new jsPDF();
+const tabela =  usuarios.map(usuario => [
+  usuario.id,
+  usuario.nome,
+  usuario.email
+]);
+doc.text("Lista de Usuários", 10, 10);
+doc.autoTable({
+  head: [["Nome", "E-mail"]],
+  body: tabela 
+});
+
+doc.save("alunos.pdf");
+
+}
 
   return (
+    <div>
     <table>
+      <thead>
+        <Button variante="contained" onClick={() => exportarPDF()}>
+          Gerar PDF
+        </Button>
       <tr>
-        <td>Nome</td>
-        <td>E-mail</td>
+        <th>Nome</th>
+        <th>E-mail</th>
+        <th>Ações</th>
       </tr>
-      {usuarios.map((usuario) =>
+      </thead>
+      <tbody>
+      {usuarios.map((usuario) => (
         <tr key={usuario.id}>
           <td>{usuario.nome}</td>
           <td>{usuario.email}</td>
+          <td>
+            <button onClick={() => removerPessoa(usuario.id)}>X</button>
+          </td>
         </tr>
-      )}
+      ))}
+      </tbody>
     </table>
+    </div>
   );
 }
